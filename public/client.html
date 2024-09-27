@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- <link rel="stylesheet" type="text/css" href="client.css"> -->
+    <link rel="stylesheet" type="text/css" href="client.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    <title>Chat App</title>
+  </head>
+  <body>
+    <!-- Form Container -->
+    <div class="form-container">
+      <h2>Join Room</h2>
+      <input id="user-name" type="text" placeholder="Name" required />
+      <input id="room-code" type="text" placeholder="Room Code" required />
+      <button id="enter-room" type="submit">Enter</button>
+    </div>
+    <!-- Chat Container -->
+    <!-- <div class="Main-chat-container"> -->
+    <div class="Main-chat-container">
+      <!-- left section -->
+      <section class="chat-container-left">
+        <section class="welcome-msg"></section>
+        <section class="chat-section"></section>
+        <section class="chatBox-section">
+          <input
+            class="chat-message"
+            type="text"
+            placeholder="chat-message"
+            required
+          />
+          <button class="send-message-btn" type="submit">Send</button>
+        </section>
+      </section>
+
+      <!-- Right section -->
+      <section class="chat-container-right">
+        <section class="connected-users-count"></section>
+        <section id="connected-users-list"></section>
+      </section>
+    </div>
+
+    <!-- Js logic -->
+    <script src="http://localhost:3000/socket.io/socket.io.js"></script>
+    <script src="client.js"></script>
+  </body>
+</html>
