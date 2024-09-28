@@ -14,7 +14,6 @@ import { fileURLToPath } from 'url';
 //
 
 const app = express();
-
 let allCurrentConnectedUsers =[];
 const allUsers = {};
 //Optional

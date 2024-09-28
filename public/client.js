@@ -4,8 +4,33 @@ const chatSection = document.getElementsByClassName("chat-section")[0];
 const InputMsgBox = document.getElementsByClassName("chat-message")[0];
 const sendMsgBtn = document.getElementsByClassName("send-message-btn")[0];
 
-const socket = io.connect("http://localhost:3000/");
+// const socket = io.connect("http://localhost:3000/");
+const socket = io.connect(
+  "https://d556a202-2d87-4992-b088-02abf4c763c9-00-3ay9l7m97xzgp.sisko.repl.co/",
+);
 
+//display picture logic
+const dpImages = [
+  "./images/dp1.jpg",
+  "./images/dp2.jpg",
+  "./images/dp3.jpg",
+  "./images/dp4.jpg",
+  "./images/dp5.jpg",
+];
+
+const userDps = {};
+
+function getRandomDP() {
+  const randomIndex = Math.floor(Math.random() * dpImages.length);
+  return dpImages[randomIndex];
+}
+function assignDP(username) {
+  if (!userDps[username]) {
+    userDps[username] = getRandomDP();
+  }
+  return userDps[username];
+}
+//display picture logic ends
 const userName = document.getElementById("user-name");
 const RoomCode = document.getElementById("room-code");
 const EnterRoomButton = document.getElementById("enter-room");
@@ -37,7 +62,7 @@ EnterRoomButton.addEventListener("click", () => {
 sendMsgBtn.addEventListener("click", () => {
   const enteredMessage = InputMsgBox.value;
   console.log("current User is:", currentUser);
-  console.log("The enterd message is",enteredMessage);
+  console.log("The enterd message is", enteredMessage);
   const data = {
     message: enteredMessage,
     username: currentUser,
@@ -50,7 +75,21 @@ sendMsgBtn.addEventListener("click", () => {
   const currentTime = `${hours}:${minutes}`;
   const newMessage = document.createElement("div");
   newMessage.classList.add("message-container");
-  newMessage.innerHTML = `<p class="msg-header">${currentUser} ${currentTime}</p><p class="msg-text">${enteredMessage}</p>`;
+
+  const userImageUrl = assignDP(currentUser);
+  console.log(userImageUrl);
+  const userImage = `<img src="${userImageUrl}" alt="${currentUser}" class="user-image">`;
+  newMessage.innerHTML = `
+    <div class="chat-message-self">
+      ${userImage}
+      <div class="message-content">
+        <p class="msg-header">${currentUser} ${currentTime}</p>
+        <p class="msg-text">${enteredMessage}</p>
+      </div>
+    </div>
+  `;
+
+  // newMessage.innerHTML = `<p class="msg-header">${currentUser} ${currentTime}</p><p class="msg-text">${enteredMessage}</p>`;
   chatSection.appendChild(newMessage);
   InputMsgBox.value = "";
 });
@@ -63,55 +102,86 @@ socket.on("perviousMessages", async (data) => {
       if (element.username == currentUser) {
         const newMessage = document.createElement("div");
         newMessage.classList.add("message-container");
-        newMessage.innerHTML = `<p class="msg-header">${currentUser} ${element.time}</p><p class="msg-text">${element.message}</p>`;
+
+        const userImageUrl = assignDP(currentUser);
+        console.log(userImageUrl);
+        const userImage = `<img src="${userImageUrl}" alt="${currentUser}" class="user-image">`;
+        newMessage.innerHTML = `
+    <div class="chat-message-self">
+      ${userImage}
+      <div class="message-content">
+        <p class="msg-header">${currentUser} ${element.time}</p>
+        <p class="msg-text">${element.message}</p>
+      </div>
+    </div>
+  `;
+
+        // newMessage.innerHTML = `<p class="msg-header">${currentUser} ${element.time}</p><p class="msg-text">${element.message}</p>`;
         chatSection.appendChild(newMessage);
       } else {
         const newMessage = document.createElement("div");
         newMessage.classList.add("message-container-other");
-        newMessage.innerHTML = `<p class="msg-header-other">${element.username} ${element.time}</p><p class="msg-text-other">${element.message}</p>`;
+
+        const userImageUrl = assignDP(currentUser);
+        console.log(userImageUrl);
+        const userImage = `<img src="${userImageUrl}" alt="${element.username}" class="user-image">`;
+        newMessage.innerHTML = `
+          <div class="chat-message-other">
+            ${userImage}
+            <div class="message-content">
+              <p class="msg-header">${element.username} ${element.time}</p>
+              <p class="msg-text">${element.message}</p>
+            </div>
+          </div>
+        `;
+
+        // newMessage.innerHTML = `<p class="msg-header-other">${element.username} ${element.time}</p><p class="msg-text-other">${element.message}</p>`;
         chatSection.appendChild(newMessage);
       }
     });
 });
 
 //displaying message when other joins
-socket.on("other-join",(msg)=>{
+socket.on("other-join", (msg) => {
   console.log("inside join data other", msg);
   const newJoin = document.createElement("div");
-    newJoin.classList.add("message-container-other");
-    newJoin.innerHTML = `<p class="msg-new-join">${msg} Joined chat</p>`;
-    chatSection.appendChild(newJoin);
+  newJoin.classList.add("message-container-other");
+  newJoin.innerHTML = `<p class="msg-new-join">${msg} Joined chat</p>`;
+  chatSection.appendChild(newJoin);
 });
 
-socket.on("disconnect-member",(msg)=>{
+socket.on("disconnect-member", (msg) => {
   console.log("inside leave data other", msg);
   const newJoin = document.createElement("div");
-    newJoin.classList.add("message-container-other");
-    newJoin.innerHTML = `<p class="msg-new-join">${msg} leave the chat</p>`;
-    chatSection.appendChild(newJoin);
+  newJoin.classList.add("message-container-other");
+  newJoin.innerHTML = `<p class="msg-new-join">${msg} leave the chat</p>`;
+  chatSection.appendChild(newJoin);
 });
 
 //displaying All avaiable members
-socket.on("all-members",(data)=>{
+socket.on("all-members", (data) => {
   console.log(data);
   const onlineUsers = Object.values(data);
 
   const allUsers = document.getElementById("connected-users-list");
-  const usersCount = document.getElementsByClassName("connected-users-count")[0];
-  usersCount.innerText = "";  
+  const usersCount = document.getElementsByClassName(
+    "connected-users-count",
+  )[0];
+  usersCount.innerText = "";
   const countDiv = document.createElement("div");
   countDiv.innerHTML = `<p>Current Active users: ${onlineUsers.length}</p>`;
   usersCount.appendChild(countDiv);
-  allUsers.innerText ="";
-  
+  allUsers.innerText = "";
+
   console.log(onlineUsers);
-  onlineUsers && onlineUsers.forEach((user)=>{
-    const members = document.createElement("div");
-    members.classList.add("connected-users-count");
-    members.innerHTML = `<p>${user}</p>`;
-    allUsers.appendChild(members);
-  })
-})
+  onlineUsers &&
+    onlineUsers.forEach((user) => {
+      const members = document.createElement("div");
+      members.classList.add("connected-users-count");
+      members.innerHTML = `<p>${user}</p>`;
+      allUsers.appendChild(members);
+    });
+});
 
 //displaying message to other users
 socket.on("server-message", (data) => {
@@ -121,24 +191,37 @@ socket.on("server-message", (data) => {
   const hours = now.getHours();
   const minutes = now.getMinutes();
   const currentTime = `${hours}:${minutes}`;
-  
+
   const newMessage = document.createElement("div");
   newMessage.classList.add("message-container-other");
-  newMessage.innerHTML = `<p class="msg-header-other">${data.username} ${currentTime}</p><p class="msg-text-other">${data.message}</p>`;
+
+  const userImageUrl = assignDP(currentUser);
+  console.log(userImageUrl);
+  const userImage = `<img src="${userImageUrl}" alt="${currentUser}" class="user-image">`;
+  newMessage.innerHTML = `
+          <div class="chat-message-other">
+            ${userImage}
+            <div class="message-content">
+              <p class="msg-header">${data.username} ${currentTime}</p>
+              <p class="msg-text">${data.message}</p>
+            </div>
+          </div>
+        `;
+
+  // newMessage.innerHTML = `<p class="msg-header-other">${data.username} ${currentTime}</p><p class="msg-text-other">${data.message}</p>`;
   chatSection.appendChild(newMessage);
 });
 
-
 //typing logic
 
-InputMsgBox.addEventListener("focus",(e)=>{
+InputMsgBox.addEventListener("focus", (e) => {
   console.log(e);
-  const msg ="Typing";
-  socket.emit("typing",msg);
-})
+  const msg = "Typing";
+  socket.emit("typing", msg);
+});
 
 let typingTimeout;
-socket.on("userTyping",(data)=>{
+socket.on("userTyping", (data) => {
   const existingTypingMsg = document.querySelector(".typing-msg-div");
   if (existingTypingMsg) {
     existingTypingMsg.remove();
@@ -153,4 +236,4 @@ socket.on("userTyping",(data)=>{
   typingTimeout = setTimeout(() => {
     typingMsg.remove();
   }, 3000);
-})
+});
